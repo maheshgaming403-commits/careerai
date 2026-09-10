@@ -3,6 +3,7 @@ import io
 import os
 import uuid
 
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile, Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +18,16 @@ from app.gemini import ask_gemini
 load_dotenv()
 
 app = FastAPI(title="CareerAI API")
+@app.get("/")
+def read_root():
+    return {"status": "Server is awake and running!"}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"], # This matches your default Vite frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
@@ -24,6 +35,16 @@ DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_URL, "http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173", # Keep this for local testing
+        "https://careerai-z1ew.vercel.app" # Replace with your exact Vercel URL
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
