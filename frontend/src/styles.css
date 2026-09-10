@@ -1,0 +1,90 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f172a; --card: #1e293b; --accent: #6366f1; --accent2: #22d3ee;
+  --text: #e2e8f0; --muted: #94a3b8; --danger: #f87171; --ok: #4ade80;
+}
+body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); }
+.container { max-width: 900px; margin: 0 auto; padding: 16px; }
+
+/* auth */
+.auth-box { max-width: 400px; margin: 10vh auto; background: var(--card); padding: 28px; border-radius: 14px; }
+.auth-box h1 { margin-bottom: 4px; font-size: 1.5rem; }
+.auth-box p.sub { color: var(--muted); margin-bottom: 18px; font-size: .9rem; }
+input, textarea, select {
+  width: 100%; padding: 11px 12px; margin-bottom: 12px; border-radius: 8px;
+  border: 1px solid #334155; background: #0f172a; color: var(--text); font-size: .95rem;
+}
+input:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+button {
+  width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer;
+  background: var(--accent); color: #fff; font-size: 1rem; font-weight: 600;
+}
+button:disabled { opacity: .55; cursor: not-allowed; }
+button.ghost { background: transparent; border: 1px solid #475569; color: var(--muted); margin-top: 10px; }
+button.small { width: auto; padding: 8px 16px; font-size: .88rem; }
+.error { color: var(--danger); font-size: .88rem; margin: 8px 0; }
+
+/* header */
+header.topbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 0; border-bottom: 1px solid #334155; margin-bottom: 20px;
+}
+header.topbar .brand { font-weight: 800; font-size: 1.2rem; color: var(--accent2); }
+.badge {
+  background: #78350f; color: #fbbf24; font-size: .75rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px;
+}
+.badge.live { background: #14532d; color: var(--ok); }
+header.topbar .spacer { flex: 1; }
+
+/* tabs */
+nav.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+nav.tabs button {
+  width: auto; padding: 9px 16px; background: var(--card); color: var(--muted);
+  border: 1px solid #334155; font-weight: 500;
+}
+nav.tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* cards */
+.card { background: var(--card); border-radius: 14px; padding: 22px; margin-bottom: 16px; }
+.card h2 { margin-bottom: 14px; font-size: 1.15rem; }
+.card h3 { margin: 12px 0 8px; font-size: 1rem; color: var(--accent2); }
+.muted { color: var(--muted); font-size: .9rem; }
+.score { font-size: 2.4rem; font-weight: 800; color: var(--ok); }
+ul.clean { list-style: none; }
+ul.clean li { padding: 6px 0 6px 22px; position: relative; color: var(--text); font-size: .93rem; }
+ul.clean li::before { content: "▸"; position: absolute; left: 4px; color: var(--accent2); }
+ul.clean li.bad::before { content: "⚠"; color: var(--danger); }
+
+.match-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
+.match-score { font-weight: 700; color: var(--ok); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.chip { background: #334155; border-radius: 16px; padding: 4px 12px; font-size: .8rem; color: var(--muted); }
+
+.phase { border-left: 3px solid var(--accent); padding-left: 14px; margin: 14px 0; }
+.phase .p-title { font-weight: 700; }
+.phase .p-phase { font-size: .8rem; color: var(--accent2); text-transform: uppercase; letter-spacing: .5px; }
+
+.loading {
+  text-align: center; padding: 28px; color: var(--muted);
+}
+.spinner {
+  width: 34px; height: 34px; border: 4px solid #334155; border-top-color: var(--accent);
+  border-radius: 50%; margin: 0 auto 12px; animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.dropzone {
+  border: 2px dashed #475569; border-radius: 12px; padding: 28px; text-align: center;
+  color: var(--muted); cursor: pointer; margin-bottom: 14px;
+}
+.dropzone:hover { border-color: var(--accent); }
+.interview-q { font-size: 1.08rem; font-weight: 600; margin-bottom: 12px; line-height: 1.5; }
+.feedback { background: #0f172a; border-radius: 10px; padding: 14px; margin-top: 12px; }
+.feedback .f-score { font-weight: 800; color: var(--ok); font-size: 1.2rem; }
+
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  .card { padding: 16px; }
+  nav.tabs button { flex: 1 1 40%; }
+}
