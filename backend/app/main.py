@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
+from supabase import create_client, Client
+from fastapi import Depends, HTTPException, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.demo_data import (
     DEMO_INTERVIEW, DEMO_JOB_MATCH, DEMO_PROJECTS, DEMO_RESUME_ANALYSIS,
@@ -51,10 +54,9 @@ app.add_middleware(
 )
 
 # ---------- storage (Supabase if configured, in-memory fallback for demo) ----------
-_users = {}       # email -> {id, name, password_hash}
-_sessions = {}    # token -> user_id
-_resumes = {}     # user_id -> list of analysis results
-_sb = None
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+_sb: Client = create_client(url, key)
 
 try:
     if os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_KEY"):
@@ -88,7 +90,15 @@ def get_user(authorization: str | None):
         raise HTTPException(status_code=401, detail="Invalid or expired session.")
     return uid
 
+security = HTTPBearer()
 
+def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)):
+    token = credentials.credentials
+    try:
+        response = _sb.auth.get_user(token)
+        return response.user
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
 @app.post("/api/auth/signup")
 def signup(body: AuthBody):
     email = body.email.lower()

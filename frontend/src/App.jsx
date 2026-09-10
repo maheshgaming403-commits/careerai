@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "./api.js";
+import { supabase } from './api';
 
 function Loading({ text }) {
   return (
@@ -19,15 +20,43 @@ function Auth({ onAuth }) {
   const [error, setError] = useState("");
 
   async function submit(e) {
-    e.preventDefault();
-    setBusy(true); setError("");
-    const res = mode === "login"
-      ? await api.login({ email, password })
-      : await api.signup({ name, email, password });
-    setBusy(false);
-    if (!res.success) return setError(res.message);
-    localStorage.setItem("careerai_token", res.token);
-    onAuth(res.user);
+  e.preventDefault();
+  setBusy(true);
+  setError("");
+
+  let sessionData, authError;
+
+  if (mode === "login") {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    sessionData = data;
+    authError = error;
+  } else {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: name } // Saves the custom name field to Supabase metadata
+      }
+    });
+    sessionData = data;
+    authError = error;
+  }
+
+  setBusy(false);
+
+  // Supabase returns an error object if auth fails
+  if (authError) {
+    return setError(authError.message);
+  }
+
+  // Store the token using your existing key so your api.js fetch wrapper can find it
+  localStorage.setItem("careerai_token", sessionData.session.access_token);
+  
+  // Pass the verified user object back to your app state
+  onAuth(sessionData.user);
   }
 
   return (

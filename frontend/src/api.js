@@ -1,3 +1,7 @@
+import { createClient } from '@supabase/supabase-js';
+
+// Add your specific Supabase project details here
+export const supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_ANON_KEY');
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 function token() {
