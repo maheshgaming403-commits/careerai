@@ -102,29 +102,21 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(securi
 @app.post("/api/auth/signup")
 def signup(body: AuthBody):
     try:
-        import uuid # Ensure uuid tool is loaded
-        
-        email = body.email.lower()
+        import uuid
         uid = str(uuid.uuid4())
+        email = body.email.lower()
         name = body.name or email.split("@")[0]
-        
-        # Try to save to Supabase
-        if _sb:
-            _sb.table("users").insert({
-                "id": uid, 
-                "email": email, 
-                "full_name": name
-            }).execute()
-            
-        # Return success if nothing crashed
-        return {
-            "success": True, 
-            "token": str(uuid.uuid4()), 
-            "user": {"id": uid, "name": name, "email": email}
-        }
-        
+
+        # Attempt database insert
+        _sb.table("users").insert({
+            "id": uid,
+            "email": email,
+            "full_name": name
+        }).execute()
+
+        return {"success": True, "token": str(uuid.uuid4()), "user": {"id": uid, "name": name, "email": email}}
     except Exception as e:
-        # If the code crashes, send the EXACT error to the browser
+        # Sends the true crash reason to your browser screen
         return {"success": False, "message": f"Backend Crash: {str(e)}"}
 
 @app.post("/api/auth/login")
