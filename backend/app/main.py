@@ -102,21 +102,32 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(securi
 @app.post("/api/auth/signup")
 def signup(body: AuthBody):
     email = body.email.lower()
-    if email in _users:
-        return clean_error("An account with this email already exists.")
+    
+    # 1. Ask Supabase directly if the user exists
+    existing = _sb.table("users").select("*").eq("email", email).execute()
+    if len(existing.data) > 0:
+        return {"success": False, "message": "An account with this email already exists."}
+        
+    # 2. Insert into database (Without hiding errors)
     uid = str(uuid.uuid4())
-    _users[email] = {"id": uid, "name": body.name or email.split("@")[0],
-                     "password_hash": hash_pw(body.password)}
-    if _sb:
-        try:
-            _sb.table("users").insert(
-                {"id": uid, "email": email, "full_name": body.name}).execute()
-        except Exception:
-            pass  # persistence failure must not block signup
+    name = body.name or email.split("@")[0]
+    
+    # If this fails, it will now correctly crash and show the real error in Render logs
+    _sb.table("users").insert({
+        "id": uid, 
+        "email": email, 
+        "full_name": name,
+        "password_hash": hash_pw(body.password) # Requires updating your Supabase table first
+    }).execute()
+
     token = str(uuid.uuid4())
-    _sessions[token] = uid
-    return {"success": True, "token": token,
-            "user": {"id": uid, "name": _users[email]["name"], "email": email}}
+    # Note: You will also need a database table to store active session tokens
+    
+    return {
+        "success": True, 
+        "token": token,
+        "user": {"id": uid, "name": name, "email": email}
+    }
 
 
 @app.post("/api/auth/login")
