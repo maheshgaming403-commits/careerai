@@ -101,34 +101,31 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(securi
         raise HTTPException(status_code=401, detail="Invalid token")
 @app.post("/api/auth/signup")
 def signup(body: AuthBody):
-    email = body.email.lower()
-    
-    # 1. Ask Supabase directly if the user exists
-    existing = _sb.table("users").select("*").eq("email", email).execute()
-    if len(existing.data) > 0:
-        return {"success": False, "message": "An account with this email already exists."}
+    try:
+        import uuid # Ensure uuid tool is loaded
         
-    # 2. Insert into database (Without hiding errors)
-    uid = str(uuid.uuid4())
-    name = body.name or email.split("@")[0]
-    
-    # If this fails, it will now correctly crash and show the real error in Render logs
-    _sb.table("users").insert({
-        "id": uid, 
-        "email": email, 
-        "full_name": name,
-        "password_hash": hash_pw(body.password) # Requires updating your Supabase table first
-    }).execute()
-
-    token = str(uuid.uuid4())
-    # Note: You will also need a database table to store active session tokens
-    
-    return {
-        "success": True, 
-        "token": token,
-        "user": {"id": uid, "name": name, "email": email}
-    }
-
+        email = body.email.lower()
+        uid = str(uuid.uuid4())
+        name = body.name or email.split("@")[0]
+        
+        # Try to save to Supabase
+        if _sb:
+            _sb.table("users").insert({
+                "id": uid, 
+                "email": email, 
+                "full_name": name
+            }).execute()
+            
+        # Return success if nothing crashed
+        return {
+            "success": True, 
+            "token": str(uuid.uuid4()), 
+            "user": {"id": uid, "name": name, "email": email}
+        }
+        
+    except Exception as e:
+        # If the code crashes, send the EXACT error to the browser
+        return {"success": False, "message": f"Backend Crash: {str(e)}"}
 
 @app.post("/api/auth/login")
 def login(body: AuthBody):
